@@ -1,10 +1,21 @@
-﻿@page "/counter"
+﻿@page "/submit"
 
-<h1>Counter</h1>
+<h1>Ingresar Exámen</h1>
 
-<p>Current count: @currentCount</p>
+<p>Formato permitido: amxd</p>
 
-<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+<form>
+    <div class="form-group">
+        <label for="amdx">Cargar archivo</label>
+        <input id="amdx" type="file" class="form-control" placeholder="Cargar archivo amdx" aria-describedby="amdx-help" />
+        <span id="amdx-help" class="form-text text-muted">Archivo resultante de análisis PCR</span>
+    </div>
+    <div class="form-check">
+        <input type="checkbox" class="form-check-input" id="exampleCheck1">
+        <label class="form-check-label" for="exampleCheck1">He leído y acepto los <a alt="términos de servicio">términos de servicio</a></label>
+    </div>
+    <button type="submit" class="btn btn-primary" @onclick="IncrementCount">Crear orden</button>
+</form>
 
 @code {
     private int currentCount = 0;

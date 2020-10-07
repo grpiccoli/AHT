@@ -1,0 +1,11 @@
+{
+  "version": "1.0",
+  "defaultProvider": "jsdelivr",
+  "libraries": [
+    {
+      "library": "jquery.rut@1.1.2",
+      "destination": "wwwroot/lib/jquery.rut",
+      "files": [ "jquery.rut.min.js" ]
+    }
+  ]
+}

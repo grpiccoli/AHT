@@ -1,28 +1,36 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using AHT.Areas.Identity;
 using AHT.Data;
+using AHT.Services;
+using AHT.Services.Interfaces;
+using WebEssentials.AspNetCore.Pwa;
+using AHT.Models;
+using Microsoft.Net.Http.Headers;
+using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.AspNetCore.Identity;
 
 namespace AHT
 {
     public class Startup
     {
+        private readonly string _os;
+        //private const string defaultCulture = "es";
+        //private readonly CultureInfo[] supportedCultures;
         public Startup(IConfiguration configuration)
         {
+            //supportedCultures = new[]
+            //    {
+            //        new CultureInfo(defaultCulture)
+            //    };
             Configuration = configuration;
+            _os = Environment.OSVersion.Platform.ToString();
         }
 
         public IConfiguration Configuration { get; }
@@ -33,13 +41,40 @@ namespace AHT
         {
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(
-                    Configuration.GetConnectionString("DefaultConnection")));
-            services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
-                .AddEntityFrameworkStores<ApplicationDbContext>();
+                    Configuration.GetConnectionString($"{_os}Connection"),
+                    sqlServerOptions => sqlServerOptions.CommandTimeout(10000)));
+            services.AddIdentity<ApplicationUser, ApplicationRole>(options => 
+            options.SignIn.RequireConfirmedAccount = true)
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddDefaultTokenProviders()
+                .AddDefaultUI()
+                .AddErrorDescriber<SpanishIdentityErrorDescriber>();
             services.AddRazorPages();
+            services.AddControllersWithViews();
+            services.AddAntiforgery(options =>
+            {
+                options.FormFieldName = "__RequestVerificationToken";
+                options.HeaderName = "X-CSRF-TOKEN";
+            });
+            services.Configure<FlowSettings>(o =>
+            {
+                var dev = true;
+                var flowEnv = dev ? "Sandbox" : "Production";
+                var preffix = dev ? "sandbox" : "www";
+                o.ApiKey = Configuration[$"Flow:{flowEnv}:ApiKey"];
+                o.SecretKey = Configuration[$"Flow:{flowEnv}:SecretKey"];
+                o.Currency = "UF";
+                o.EndPoint = new Uri($"https://{preffix}.flow.cl/api");
+            });
+            services.AddScoped<IFlow, FlowService>();
+
+            services.AddTransient<IEmailSender, EmailSender>();
+            services.AddScoped<IViewRenderService, ViewRenderService>();
             services.AddServerSideBlazor();
-            services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
+            services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<ApplicationUser>>();
             services.AddSingleton<WeatherForecastService>();
+            services.AddProgressiveWebApp(new PwaOptions { EnableCspNonce = true });
+            //services.AddCors();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -56,12 +91,15 @@ namespace AHT
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+            FileExtensionContentTypeProvider provider = new FileExtensionContentTypeProvider();
+            provider.Mappings[".webmanifest"] = "application/manifest+json";
 
-            app.UseHttpsRedirection();
+            //app.UseSitemapMiddleware();
+            //app.UseHttpsRedirection();
             app.UseStaticFiles();
 
             app.UseRouting();
-
+            //app.UseCors();
             app.UseAuthentication();
             app.UseAuthorization();
 
