@@ -17,6 +17,7 @@ namespace AHT.Areas.Identity.Pages.Account
     {
         private readonly UserManager<ApplicationUser> _userManager;
 
+        public Uri ReturnUrl { get; set; }
         public ConfirmEmailModel(UserManager<ApplicationUser> userManager)
         {
             _userManager = userManager;
@@ -25,7 +26,7 @@ namespace AHT.Areas.Identity.Pages.Account
         [TempData]
         public string StatusMessage { get; set; }
 
-        public async Task<IActionResult> OnGetAsync(string userId, string code)
+        public async Task<IActionResult> OnGetAsync(string userId, string code, Uri returnUrl = null)
         {
             if (userId == null || code == null)
             {
@@ -41,6 +42,9 @@ namespace AHT.Areas.Identity.Pages.Account
             code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
             var result = await _userManager.ConfirmEmailAsync(user, code);
             StatusMessage = result.Succeeded ? "Thank you for confirming your email." : "Error confirming your email.";
+
+            ReturnUrl = returnUrl;
+
             return Page();
         }
     }

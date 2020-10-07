@@ -1,7 +1,17 @@
 ﻿@page
 @model ConfirmEmailModel
 @{
-    ViewData["Title"] = "Confirm email";
+    ViewData["Title"] = "Correo confirmado";
 }
 
 <h1>@ViewData["Title"]</h1>
+
+<p>¡Gracias por confirmar su correo!</p>
+
+@section Scripts{
+    <script>
+        setTimeout(function(){
+            window.location.href = '@Model.ReturnUrl';
+         }, 2000);
+    </script>
+}
