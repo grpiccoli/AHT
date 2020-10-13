@@ -1,0 +1,59 @@
+﻿@page "/submit"
+@using AHT.Services.Interfaces
+@using System.IO
+@using SendGrid
+@using SendGrid.Helpers.Mail
+@using Microsoft.AspNetCore.Http
+@inject IEmailSender EmailSender
+@inject IFlow flowservice
+@inject IHttpContextAccessor context
+@inject IJSRuntime JSRuntime;
+
+<h1>Ingresar Exámen</h1>
+
+<p>Formato permitido: xlsx</p>
+
+<InputFile OnChange="HandleFileSelected" />
+
+@if (file != null)
+{
+    <p>@result</p>
+}
+
+@code {
+    IFileListEntry file;
+    string result;
+    string url = "";
+
+    async Task HandleFileSelected(IFileListEntry[] files)
+    {
+        file = files.FirstOrDefault();
+
+        if (file.Type.Contains("spreadsheet"))
+        {
+            url = flowservice.PaymentCreate(
+            1, "PagoParticular",
+            350,
+            "contacto@epicsolutions.cl");
+
+            await JSRuntime.InvokeAsync<object>("open", new object[] { url, "_blank" });
+
+            var apiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY");
+            var client = new SendGridClient(apiKey);
+            var from = new EmailAddress("contacto@aht.epicsolutions.cl", "AHT App");
+            var subject = $"{context.HttpContext.User.Identity.Name}";
+            var to = new EmailAddress("contacto@epicsolutions.cl", "AHT");
+            var plainTextContent = "testing";
+            var htmlContent = "<strong>testing</strong>";
+            var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
+            await msg.AddAttachmentAsync(file.Name, file.Data, file.Type, "attachment");
+            var response = await client.SendEmailAsync(msg);
+
+            result = "Esperando pago";
+        }
+        else
+        {
+            result = "Error: Please upload a valid xlsx file";
+        }
+    }
+}

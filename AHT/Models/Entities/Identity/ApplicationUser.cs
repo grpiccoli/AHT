@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Identity;
-using System.ComponentModel.DataAnnotations;
+using AHT.Models.Entities;
+using ConsultaMD.Extensions.Validation;
 
 namespace AHT.Models
 {
     // Add profile data for application users by adding properties to the AppUser class
     public class ApplicationUser : IdentityUser
     {
+        public virtual Customer Customer { get; set; }
         public int RUT { get; set; }
-        [RegularExpression(@"^.*$")]
         public string Name { get; set; }
         public string Last { get; set; }
         public Uri ProfileImageUrl { get; set; }
@@ -19,6 +20,7 @@ namespace AHT.Models
         /// Navigation property for the roles this user belongs to.
         /// </summary>
         public virtual ICollection<IdentityUserRole<string>> UserRoles { get; } = new List<IdentityUserRole<string>>();
+        public virtual ICollection<Entry> Entries { get; } = new List<Entry>();
         /// <summary>
         /// Navigation property for the claims this user possesses.
         /// </summary>

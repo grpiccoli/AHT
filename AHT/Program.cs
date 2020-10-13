@@ -11,7 +11,8 @@ namespace AHT
     {
         public static async Task Main(string[] args)
         {
-            await CreateHostBuilder(args).Build().RunAsync().ConfigureAwait(false);
+            var builder = CreateHostBuilder(args);
+            await builder.Build().RunAsync().ConfigureAwait(false);
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>

@@ -9,8 +9,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
 
 namespace AHT.Services
 {
@@ -28,7 +26,7 @@ namespace AHT.Services
         {
             var args = string.Join("&",
                 form.Select(kvp => string.Format(CultureInfo.InvariantCulture, "{0}={1}", kvp.Key, kvp.Value)));
-            var script = Path.Combine(_environment.ContentRootPath, "src", "scripts", "node", "flow.js");
+            var script = Path.Combine(_environment.ContentRootPath, "src", "flow.js");
             using var process = new Process
             {
                 StartInfo = new ProcessStartInfo

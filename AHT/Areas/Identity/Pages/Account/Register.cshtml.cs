@@ -82,7 +82,7 @@ namespace AHT.Areas.Identity.Pages.Account
             if (ModelState.IsValid)
             {
                 var user = new ApplicationUser 
-                { 
+                {
                     UserName = Input.RUT,
                     Email = Input.Email, 
                     RUT = Input.RUT.RutToInt()

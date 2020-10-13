@@ -12,7 +12,7 @@ namespace AHT.Models.Entities
         public PayMode PayMode { get; set; }
         public string CreditCardType { get; set; }
         public string Last4CardDigits { get; set; }
-        public int ExternalId { get; set; }
+        public string ExternalId { get; set; }
         public virtual ApplicationUser External { get; set; }
         public Status Status { get; set; }
         public DateTime RegisterDate { get; set; }

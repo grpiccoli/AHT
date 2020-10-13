@@ -56,6 +56,7 @@ namespace AHT
                 options.FormFieldName = "__RequestVerificationToken";
                 options.HeaderName = "X-CSRF-TOKEN";
             });
+            services.Configure<EmailSettings>(o => o.SendGridKey = Configuration["SG_KEY"]);
             services.Configure<FlowSettings>(o =>
             {
                 var dev = true;
@@ -66,10 +67,12 @@ namespace AHT
                 o.Currency = "UF";
                 o.EndPoint = new Uri($"https://{preffix}.flow.cl/api");
             });
-            services.AddScoped<IFlow, FlowService>();
+            //services.AddScoped<IFlow, FlowService>();
 
-            services.AddTransient<IEmailSender, EmailSender>();
-            services.AddScoped<IViewRenderService, ViewRenderService>();
+            //services.AddTransient<IEmailSender, EmailSender>();
+            services.AddSingleton<IFlow, FlowService>();
+            services.AddSingleton<IEmailSender, EmailSender>();
+            services.AddSingleton<IViewRenderService, ViewRenderService>();
             services.AddServerSideBlazor();
             services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<ApplicationUser>>();
             services.AddSingleton<WeatherForecastService>();

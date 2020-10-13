@@ -7,6 +7,8 @@ using System.IO;
 using System;
 using Microsoft.AspNetCore.Html;
 using AHT.Models.VM;
+using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Http;
 
 namespace AHT.Services
 {
@@ -15,34 +17,48 @@ namespace AHT.Services
     public class EmailSender : IEmailSender
     {
         private readonly IViewRenderService _viewRenderService;
+        private readonly EmailSettings _settings;
         public EmailSender(
             IViewRenderService viewRenderService,
-            IConfiguration configuration)
+            IOptions<EmailSettings> settings)
         {
-            Configuration = configuration;
+            _settings = settings?.Value;
             _viewRenderService = viewRenderService;
         }
-
         public IConfiguration Configuration { get; }
-
-        public Task<Response> SendEmailAsync(string email, string subject, string message, string logo = null)
+        public Task<Response> SendEmailAsync(string email, string subject, string message) =>
+            Execute(_settings.SendGridKey, subject, message, email);
+        public async Task<Response> SendEmailAsync(string email, string subject, string message, Stream attachment = null, string attachmentName = null, string mimeType = null)
         {
-            return Execute("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", subject, message, email, logo);
+            var client = new SendGridClient(_settings.SendGridKey);
+            var From = new EmailAddress("no-responder@epicsolutions.cl", "AHT");
+            var Subject = subject;
+            var PlainTextContent = message;
+            var HtmlContent = message;
+            var to = new EmailAddress(email, "Cliente");
+            var msg = MailHelper.CreateSingleEmail(From, to, Subject, PlainTextContent, HtmlContent);
+            if (attachment != null)
+            {
+                await msg.AddAttachmentAsync(attachmentName, attachment, mimeType).ConfigureAwait(false);
+            }
+            return await client.SendEmailAsync(msg).ConfigureAwait(false);
         }
-
-        public static Task<Response> Execute(string apiKey, string subject, string message, string email, string logo = null)
+        public Task<Response> SendEmailAsync(string email, string subject, string message, string attachmentPath = null, string attachmentName = null, string mimeType = null) =>
+            Execute(_settings.SendGridKey, subject, message, email, attachmentPath, attachmentName, mimeType);
+        public static Task<Response> Execute(string apiKey, string subject, string message, string email, string attachment = null, string attachmentName = null, string mimeType = null, string contentDisposition = null, string contentId = null)
         {
             var client = new SendGridClient(apiKey);
             var msg = new SendGridMessage()
             {
-                From = new EmailAddress("no-responder@aht.epicsolutions.cl", "AHT"),
+                From = new EmailAddress("no-responder@epicsolutions.cl", "AHT"),
                 Subject = subject,
                 PlainTextContent = message,
                 HtmlContent = message
             };
-            var bytes = File.ReadAllBytes(logo);
-            var file = Convert.ToBase64String(bytes);
-            msg.AddAttachment("lofo.png", file, "image/png", "inline", "logo");
+            if(attachment != null)
+            {
+                msg.AddAttachment(attachmentName, attachment, mimeType, contentDisposition, contentId);
+            }
             msg.AddTo(new EmailAddress(email));
             return client.SendEmailAsync(msg);
         }
@@ -64,8 +80,12 @@ namespace AHT.Services
                 .RenderToStringAsync("_ValidationEmail", emailModel)
                 .ConfigureAwait(false);
 
-            return await SendEmailAsync(email, "Verifica tu correo", emailView, logo)
-                .ConfigureAwait(false);
+            return await Execute(_settings.SendGridKey, "Verifica tu correo", emailView, email, GetByteString(logo), "logo.png", "image/png", "inline", "logo").ConfigureAwait(false);
         }
+        public static string GetByteString(string path) => Convert.ToBase64String(File.ReadAllBytes(path));
+    }
+    public class EmailSettings
+    {
+        public string SendGridKey { get; set; }
     }
 }
