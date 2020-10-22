@@ -1,0 +1,13 @@
+{
+  "version": "1.0.0",
+  "name": "telomeros",
+  "private": true,
+  "description": "",
+  "dependencies": {
+    "puppeteer": "^3.0.0",
+    "urlencode": "^1.1.0"
+  },
+  "author": "EpicSolutions",
+  "license": "ISC",
+  "keywords": []
+}

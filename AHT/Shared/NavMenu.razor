@@ -15,10 +15,14 @@
         <AuthorizeView>
             <NotAuthorized>
                 <li class="nav-item px-3">
-                    <a class="nav-link" id="register" href="Identity/Account/Register"><span class="oi oi-person" aria-hidden="true"></span> Registrarse</a>
+                    <NavLink class="nav-link" href="/Identity/Account/Register">
+                        <span class="oi oi-person" aria-hidden="true"></span> Registrarse
+                    </NavLink>
                 </li>
                 <li class="nav-item px-3">
-                    <a class="nav-link" id="login" href="Identity/Account/Login"><span class="oi oi-account-login" aria-hidden="true"></span> Iniciar sesión</a>
+                    <NavLink class="nav-link" href="/Identity/Account/Login">
+                        <span class="oi oi-account-login" aria-hidden="true"></span> Iniciar sesión
+                    </NavLink>
                 </li>
             </NotAuthorized>
             <Authorized>
@@ -30,6 +34,11 @@
                 <li class="nav-item px-3">
                     <NavLink class="nav-link" href="results">
                         <span class="oi oi-list-rich" aria-hidden="true"></span> Informes
+                    </NavLink>
+                </li>
+                <li class="nav-item px-3">
+                    <NavLink class="nav-link" href="/Identity/Account/Logout">
+                        <span class="oi oi-account-logout" aria-hidden="true"></span> Logout
                     </NavLink>
                 </li>
             </Authorized>

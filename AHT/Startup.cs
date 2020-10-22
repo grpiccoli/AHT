@@ -12,9 +12,10 @@ using AHT.Services;
 using AHT.Services.Interfaces;
 using WebEssentials.AspNetCore.Pwa;
 using AHT.Models;
-using Microsoft.Net.Http.Headers;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
 
 namespace AHT
 {
@@ -71,8 +72,10 @@ namespace AHT
 
             //services.AddTransient<IEmailSender, EmailSender>();
             services.AddSingleton<IFlow, FlowService>();
-            services.AddSingleton<IEmailSender, EmailSender>();
-            services.AddSingleton<IViewRenderService, ViewRenderService>();
+            services.AddTransient<IViewRenderService, ViewRenderService>();
+            services.AddTransient<IEmailSender, EmailSender>();
+            //services.AddSingleton<IViewRenderService, ViewRenderService>();
+            //services.AddSingleton<IEmailSender, EmailSender>();
             services.AddServerSideBlazor();
             services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<ApplicationUser>>();
             services.AddSingleton<WeatherForecastService>();
@@ -81,7 +84,7 @@ namespace AHT
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public static void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -105,7 +108,7 @@ namespace AHT
             //app.UseCors();
             app.UseAuthentication();
             app.UseAuthorization();
-
+            app.UseMiddleware<CsrfTokenCOokieMiddleware>();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();

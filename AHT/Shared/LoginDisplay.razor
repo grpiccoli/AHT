@@ -1,12 +1,15 @@
-﻿<AuthorizeView>
+﻿@inject Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper<LoginDisplay> Html;
+
+<AuthorizeView>
     <Authorized>
         <a href="Identity/Account/Manage">Hola, @context.User.Identity.Name!</a>
-        <form method="post" action="Identity/Account/LogOut">
+        <form method="post" action="/Identity/Account/LogOut?returnUrl=%2F">
+            @Html.AntiForgeryToken()
             <button type="submit" class="nav-link btn btn-link">Cerrar Sesión</button>
         </form>
     </Authorized>
     <NotAuthorized>
-        <a href="Identity/Account/Register">Registro</a>
         <a href="Identity/Account/Login">Iniciar Sesión</a>
+        <a href="Identity/Account/Register">Registrarse</a>
     </NotAuthorized>
 </AuthorizeView>
